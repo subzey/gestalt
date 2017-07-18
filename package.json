@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "dependencies": {
+    "@types/webassembly-js-api": "0.0.1",
+    "rimraf": "^2.6.1",
+    "systemjs": "^0.20.15",
+    "typescript": "^2.4.1",
+    "wabt": "0.0.13"
+  },
+  "devDependencies": {
+    "http-server": "^0.10.0"
+  },
+  "scripts": {
+    "build": "node build.js && tsc",
+    "start": "npm run build && http-server build"
+  }
+}

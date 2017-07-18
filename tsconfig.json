@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "system",
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"sourceMap": false,
+		"rootDir": "source",
+		"outDir": "build",
+		"typeRoots" : [
+			"node_modules/@types"
+		]
+	},
+	"files": [
+		"source/example.ts",
+		"source/lib/particles.ts",
+		"source/lib/worker.ts"
+	]
+}
