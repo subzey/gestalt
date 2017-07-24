@@ -73,17 +73,19 @@
 			;; This loop will run at least once, i.e, the zeroth element is always scaled.
 			;; Assuming this whole thing has no sense with zero particles, it's fine.
 
-			(i32.add (get_local $ptr) (i32.const 4)) ;; Read ptr
-			(i32.add (get_local $ptr) (i32.const 4)) ;; Write ptr
-			(f32.load)
-			(f32.mul (get_local $float1))
-			(f32.store)
+			(f32.store offset=4 align=4 (get_local $ptr)
+				(f32.mul
+					(get_local $float1)
+					(f32.load offset=4 align=4 (get_local $ptr))
+				)
+			)
 
-			(i32.add (get_local $ptr) (i32.const 8)) ;; Read ptr
-			(i32.add (get_local $ptr) (i32.const 8)) ;; Write ptr
-			(f32.load)
-			(f32.mul (get_local $float2))
-			(f32.store)
+			(f32.store offset=8 align=4 (get_local $ptr)
+				(f32.mul
+					(get_local $float1)
+					(f32.load offset=8 align=4 (get_local $ptr))
+				)
+			)
 
 			(i32.add (get_local $ptr) (i32.const 20)) ;; Advance ptr to the next item
 			(tee_local $ptr)
@@ -125,30 +127,30 @@
 			(if (i32.gt_u)
 				(then
 					;; X
-					(i32.add (get_local $ptr) (i32.const 4)) ;; X coord ptr
-					(f32.convert_u/i32 (call $xorshiftRand))
-					(f32.div (f32.const 0x100000000))
-					(f32.mul (get_local $width))
-					(f32.store)
+					(f32.store offset=4 align=4 (get_local $ptr) ;; X coord ptr = ptr + 4
+						(f32.convert_u/i32 (call $xorshiftRand))
+						(f32.div (f32.const 0x100000000))
+						(f32.mul (get_local $width))
+					)
 
 					;; Y
-					(i32.add (get_local $ptr) (i32.const 8)) ;; Y coord ptr
-					(f32.convert_u/i32 (call $xorshiftRand))
-					(f32.div (f32.const 0x100000000))
-					(f32.mul (get_local $height))
-					(f32.store)
+					(f32.store offset=8 align=4 (get_local $ptr) ;; Y coord ptr = ptr + 8
+						(f32.convert_u/i32 (call $xorshiftRand))
+						(f32.div (f32.const 0x100000000))
+						(f32.mul (get_local $height))
+					)
 
 					;; DX
-					(i32.add (get_local $ptr) (i32.const 12)) ;; DX coord ptr
-					(f32.convert_s/i32 (call $xorshiftRand))
-					(f32.div (f32.const 0x10000000)) ;; Adjust speed here
-					(f32.store)
+					(f32.store offset=12 align=4 (get_local $ptr) ;; DX coord ptr = ptr + 12
+						(f32.convert_s/i32 (call $xorshiftRand))
+						(f32.div (f32.const 0x10000000)) ;; Adjust speed here
+					)
 
 					;; DY
-					(i32.add (get_local $ptr) (i32.const 16)) ;; DY coord ptr
-					(f32.convert_s/i32 (call $xorshiftRand))
-					(f32.div (f32.const 0x10000000)) ;; Adjust speed here
-					(f32.store)
+					(f32.store offset=16 align=4 (get_local $ptr) ;; DY coord ptr
+						(f32.convert_s/i32 (call $xorshiftRand))
+						(f32.div (f32.const 0x10000000)) ;; Adjust speed here
+					)
 
 					;; Advance to the next item
 					(i32.add (get_local $ptr) (i32.const 20))
@@ -180,7 +182,7 @@
 							(f32.convert_u/i32 (get_local $ptr))
 						)
 					)
-					(f32.store)
+					(f32.store align=4)
 
 					;; Advance to the next item
 					(i32.add (get_local $ptr) (i32.const 20))
@@ -277,17 +279,17 @@
 		(set_local $dy)
 
 		;; Fill memory. Luckily, we don't care about triangles winding.
-		(f32.store (get_local $ptr)
+		(f32.store offset=0 (get_local $ptr)
 			(f32.add (get_local $x1) (get_local $dx)) ;; vertex 0 [1+] X
 		)
-		(f32.store (i32.add (get_local $ptr) (i32.const 4)) ;; vertex 0 [1+] Y
+		(f32.store offset=4 (get_local $ptr) ;; vertex 0 [1+] Y
 			(f32.add (get_local $y1) (get_local $dy))
 		)
 
-		(f32.store (i32.add (get_local $ptr) (i32.const 40)) ;; vertex 5 [2-] X
+		(f32.store offset=40 (get_local $ptr) ;; vertex 5 [2-] X
 			(f32.sub (get_local $x2) (get_local $dx))
 		)
-		(f32.store (i32.add (get_local $ptr) (i32.const 44)) ;; vertex 5 [2-] Y
+		(f32.store offset=44 (get_local $ptr) ;; vertex 5 [2-] Y
 			(f32.sub (get_local $y2) (get_local $dy))
 		)
 
@@ -296,53 +298,43 @@
 
 		;; Vertices 1 and 3 has same coords. Same for 2 and 4
 
-		;; TODO: offset=, align=
-
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 8)) ;; Ptr of vertex 1 [2+] X
+		(f32.store offset=8 (get_local $ptr) ;; Ptr of vertex 1 [2+] X
 			(tee_local $x2
 				(f32.add (get_local $x2) (get_local $dx))
 			)
 		)
 
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 24)) ;; Ptr of vertex 3 [2+] X
+		(f32.store offset=24 (get_local $ptr) ;; Ptr of vertex 3 [2+] X
 			(get_local $x2)
 		)
 
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 12)) ;; Ptr of vertex 1 [2+] Y
+		(f32.store offset=12 (get_local $ptr) ;; Ptr of vertex 1 [2+] Y
 			(tee_local $y2
 				(f32.add (get_local $y2) (get_local $dy))
 			)
 		)
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 28)) ;; Ptr of vertex 3 [2+] Y
+		(f32.store offset=28 (get_local $ptr) ;; Ptr of vertex 3 [2+] Y
 			(get_local $y2)
 		)
 
 		;; Phew! Once more.
 
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 16)) ;; Ptr of vertex 2 [1-] X
+		(f32.store offset=16 (get_local $ptr) ;; Ptr of vertex 2 [1-] X
 			(tee_local $x1
 				(f32.sub (get_local $x1) (get_local $dx))
 			)
 		)
 
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 32)) ;; Ptr of vertex 4 [1-] X
+		(f32.store offset=32 (get_local $ptr) ;; Ptr of vertex 4 [1-] X
 			(get_local $x1)
 		)
 
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 20)) ;; Ptr of vertex 2 [1-] Y
+		(f32.store offset=20 (get_local $ptr) ;; Ptr of vertex 2 [1-] Y
 			(tee_local $y1
 				(f32.sub (get_local $y1) (get_local $dy))
 			)
 		)
-		(f32.store
-			(i32.add (get_local $ptr) (i32.const 36)) ;; Ptr of vertex 4 [1-] Y
+		(f32.store offset=36 (get_local $ptr) ;; Ptr of vertex 4 [1-] Y
 			(get_local $y1)
 		)
 
@@ -388,28 +380,32 @@
 			(if (i32.gt_u)
 				(then
 					;; DX
-					(i32.add (get_local $ptr) (i32.const 4)) ;; X write ptr
-					(i32.add (get_local $ptr) (i32.const 4)) ;; X read ptr
-					(f32.load)
-					(i32.add (get_local $ptr) (i32.const 12)) ;; DX read ptr
-					(f32.load)
-					(f32.mul (get_local $timestampDiff))
-					(f32.add)
-					(call $wrapOver (get_local $width))
-					(tee_local $tmp1)
-					(f32.store)
+					(f32.store offset=4 (get_local $ptr) ;; X write ptr
+						(f32.add
+							(f32.load offset=4 (get_local $ptr)) ;; X read ptr
+							(f32.mul
+								(f32.load offset=12 (get_local $ptr)) ;; DX read ptr
+								(get_local $timestampDiff)
+							)
+						)
+						(tee_local $tmp1
+							(call $wrapOver (get_local $width))
+						)
+					)
 
 					;; DY
-					(i32.add (get_local $ptr) (i32.const 8)) ;; Y write ptr
-					(i32.add (get_local $ptr) (i32.const 8)) ;; Y read ptr
-					(f32.load)
-					(i32.add (get_local $ptr) (i32.const 16)) ;; DY read ptr
-					(f32.load)
-					(f32.mul (get_local $timestampDiff))
-					(f32.add)
-					(call $wrapOver (get_local $height))
-					(tee_local $tmp2)
-					(f32.store)
+					(f32.store offset=8 (get_local $ptr) ;; Y write ptr
+						(f32.add
+							(f32.load offset=8 (get_local $ptr)) ;; Y read ptr
+							(f32.mul
+								(f32.load offset=16 (get_local $ptr)) ;; DY read ptr
+								(get_local $timestampDiff)
+							)
+						)
+						(tee_local $tmp2
+							(call $wrapOver (get_local $height))
+						)
+					)
 
 					;; inner loop
 					(set_local $ptrInner (i32.const 0))
@@ -419,10 +415,8 @@
 							(then
 								(get_local $tmp1)
 								(get_local $tmp2)
-								(i32.add (get_local $ptrInner) (i32.const 4))
-								(f32.load)
-								(i32.add (get_local $ptrInner) (i32.const 8))
-								(f32.load)
+								(f32.load offset=4 (get_local $ptrInner))
+								(f32.load offset=8 (get_local $ptrInner))
 								(call $computeEdge)
 								(set_local $ptrInner (i32.add (get_local $ptrInner) (i32.const 20)))
 								(br 1)
