@@ -1,11 +1,19 @@
+"use strict";
 /// <reference path="protocol.ts" />
 console.log('Hello from worker!');
 (fetch('particles.wasm')
     .then(response => response.arrayBuffer())
     .then(WebAssembly.compile)
-    .then(m => WebAssembly.instantiate(m, { console }))
-    .then(wasmModule => {
-    const exports = wasmModule.exports;
+    .then(wasmModule => WebAssembly.instantiate(wasmModule, {
+    console,
+    config: {
+        density: 0.00015,
+        speed: 40,
+        distance: 100,
+    }
+}))
+    .then(wasmInstance => {
+    const exports = wasmInstance.exports;
     self.addEventListener('message', (e) => {
         exports.compute(e.data.width, e.data.height, e.data.timestamp);
         // const arrayBuffer = new ArrayBuffer(2 * 5 * 4); // 2 elements with 5 float32 fields (4 bytes each)

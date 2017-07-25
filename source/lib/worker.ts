@@ -5,9 +5,16 @@ console.log('Hello from worker!');
 (fetch('particles.wasm')
 	.then(response => response.arrayBuffer())
 	.then(WebAssembly.compile)
-	.then(m => WebAssembly.instantiate(m, { console }))
-	.then(wasmModule => {
-		const exports = wasmModule.exports;
+	.then(wasmModule => WebAssembly.instantiate(wasmModule, {
+		console,
+		config: {
+			density: 0.00015,
+			speed: 40,
+			distance: 100,
+		}
+	}))
+	.then(wasmInstance => {
+		const exports = wasmInstance.exports;
 
 		self.addEventListener('message', (e: ProtocolMessageEvent<WorkerRequest>) => {
 

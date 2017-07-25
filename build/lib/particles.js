@@ -5,7 +5,7 @@ System.register([], function (exports_1, context_1) {
     var fetchAndCompile, createProgram, Particles;
     return {
         setters: [],
-        execute: function () {/// <reference path="protocol.ts" />
+        execute: function () {
             console.log('Hello from lib!');
             fetchAndCompile = (gl, url, flavor) => ((fetch(url)
                 .then((response) => response.text())
@@ -127,7 +127,7 @@ System.register([], function (exports_1, context_1) {
                         0, // stride: default
                         data.edgesPtr);
                         gl.enableVertexAttribArray(coordsAttribLocation);
-                        gl.vertexAttrib2f(gl.getAttribLocation(this._pointsProgram, 'screenSize'), data.width, data.height);
+                        gl.vertexAttrib2f(gl.getAttribLocation(this._edgesProgram, 'screenSize'), data.width, data.height);
                         gl.drawArrays(gl.TRIANGLES, 0, data.edgesCount);
                     }
                     if (this._pointsProgram) {

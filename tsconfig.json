@@ -3,7 +3,7 @@
 		"target": "es6",
 		"module": "system",
 		"noImplicitAny": true,
-		"strictNullChecks": true,
+		"strict": true,
 		"sourceMap": false,
 		"rootDir": "source",
 		"outDir": "build",

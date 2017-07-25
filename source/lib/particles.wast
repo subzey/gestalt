@@ -1,12 +1,21 @@
 (module
+	;; Fancy debug functions
+	;; (that actually are just console.log)
 	(func $logi32 (import "console" "log") (param i32))
 	(func $logf32 (import "console" "log") (param f32))
+
+	;; Config
+	(global $particlesDensity (import "config" "density") f32)
+	(global $particlesSpeed (import "config" "speed") f32)
+	(global $edgesDistance (import "config" "distance") f32)
+
 	(memory 1)
 	(export "mem" (memory 0))
 
 	;; xorshift stuff
 	(global $xorshift_seed (mut i32) (i32.const 1))
-
+	;; xorshift is a PRNG algo. It's insanely fast and
+	;; its distrbution good enough for this task
 	(func $xorshiftRand (result i32)
 		(local $x i32)
 
@@ -96,7 +105,7 @@
 
 		;; How many points are there now
 		(f32.mul (get_local $width) (get_local $height))
-		(f32.mul (f32.const 0.00015)) ;; MAGIC CONSTANT: Density
+		(f32.mul (get_global $particlesDensity))
 
 		(i32.trunc_u/f32) ;; Convert f32 to i32
 		(set_local $newParticlesCount)
@@ -143,13 +152,15 @@
 					;; DX
 					(f32.store offset=12 align=4 (get_local $ptr) ;; DX coord ptr = ptr + 12
 						(f32.convert_s/i32 (call $xorshiftRand))
-						(f32.div (f32.const 0x10000000)) ;; Adjust speed here
+						(f32.div (f32.const 0x80000000))
+						(f32.mul (get_global $particlesSpeed))
 					)
 
 					;; DY
 					(f32.store offset=16 align=4 (get_local $ptr) ;; DY coord ptr
 						(f32.convert_s/i32 (call $xorshiftRand))
-						(f32.div (f32.const 0x10000000)) ;; Adjust speed here
+						(f32.div (f32.const 0x80000000))
+						(f32.mul (get_global $particlesSpeed))
 					)
 
 					;; Advance to the next item
@@ -231,7 +242,7 @@
 
 		(tee_local $dist)
 		(if
-			(f32.gt (f32.const 100))
+			(f32.ge (get_global $edgesDistance))
 			(then
 				(return) ;; Points are too far away
 			)
@@ -260,18 +271,23 @@
 			)
 		)
 
-		;; Scale down, so abs(dx, dy) = 1
-		;; and (!) exchange them, so dx and dy becomes perpendicular to its original position
+		;; TODO: Use opacity if the line width is smaller than 1
+		;; TODO: Division by zero
 		(set_local $factor
 			(f32.sub
 				(f32.div
 					(f32.const 1)
 					(get_local $dist)
 				)
-				(f32.const 0.008)
+				(f32.div
+					(f32.const 1)
+					(get_global $edgesDistance)
+				)
 			)
 		)
 
+		;; Scale down, so abs(dx, dy) = 1
+		;; and (!) exchange them, so dx and dy becomes perpendicular to its original position
 		(f32.mul (get_local $dx) (get_local $factor))
 		(f32.mul (get_local $dy) (get_local $factor))
 		(f32.neg)

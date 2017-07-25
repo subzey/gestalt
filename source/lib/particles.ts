@@ -175,7 +175,7 @@ export class Particles {
 			);
 
 			gl.enableVertexAttribArray(coordsAttribLocation);
-			gl.vertexAttrib2f(gl.getAttribLocation(this._pointsProgram, 'screenSize'), data.width, data.height);
+			gl.vertexAttrib2f(gl.getAttribLocation(this._edgesProgram, 'screenSize'), data.width, data.height);
 			gl.drawArrays(gl.TRIANGLES, 0, data.edgesCount);
 		}
 
