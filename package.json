@@ -3,8 +3,8 @@
   "dependencies": {
     "@types/webassembly-js-api": "0.0.1",
     "rimraf": "^2.6.1",
-    "systemjs": "^0.20.15",
-    "typescript": "^2.4.1",
+    "systemjs": "^0.20.16",
+    "typescript": "^2.4.2",
     "wabt": "0.0.13"
   },
   "devDependencies": {
