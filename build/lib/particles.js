@@ -119,22 +119,28 @@ System.register([], function (exports_1, context_1) {
                     gl.bufferData(gl.ARRAY_BUFFER, data.buffer, gl.DYNAMIC_DRAW);
                     if (this._edgesProgram && data.edgesCount) {
                         gl.useProgram(this._edgesProgram);
-                        const coordsAttribLocation = gl.getAttribLocation(this._pointsProgram, 'coords');
+                        const coordsAttribLocation = gl.getAttribLocation(this._edgesProgram, 'coords');
+                        const screenSizeAttribLocation = gl.getAttribLocation(this._edgesProgram, 'screenSize');
+                        gl.enableVertexAttribArray(coordsAttribLocation);
+                        gl.disableVertexAttribArray(screenSizeAttribLocation);
                         gl.vertexAttribPointer(coordsAttribLocation, // index
                         2, // size (X and Y)
                         gl.FLOAT, // float32 each
                         false, // normalized. Has no effect on float
                         0, // stride: default
                         data.edgesPtr);
-                        gl.enableVertexAttribArray(coordsAttribLocation);
-                        gl.vertexAttrib2f(gl.getAttribLocation(this._edgesProgram, 'screenSize'), data.width, data.height);
+                        gl.vertexAttrib2f(screenSizeAttribLocation, data.width, data.height);
                         gl.drawArrays(gl.TRIANGLES, 0, data.edgesCount);
                     }
                     if (this._pointsProgram) {
                         gl.useProgram(this._pointsProgram);
                         const sizeAttribLocation = gl.getAttribLocation(this._pointsProgram, 'size');
                         const coordsAttribLocation = gl.getAttribLocation(this._pointsProgram, 'coords');
+                        const screenSizeAttribLocation = gl.getAttribLocation(this._pointsProgram, 'screenSize');
                         const stride = 20;
+                        gl.enableVertexAttribArray(sizeAttribLocation);
+                        gl.enableVertexAttribArray(coordsAttribLocation);
+                        gl.disableVertexAttribArray(screenSizeAttribLocation);
                         gl.vertexAttribPointer(sizeAttribLocation, // index
                         1, // size
                         gl.FLOAT, // float32
@@ -147,9 +153,7 @@ System.register([], function (exports_1, context_1) {
                         false, // normalized. Has no effect on float
                         stride, // stride: 5 * 4 bytes between
                         data.pointsPtr + 4);
-                        gl.enableVertexAttribArray(sizeAttribLocation);
-                        gl.enableVertexAttribArray(coordsAttribLocation);
-                        gl.vertexAttrib2f(gl.getAttribLocation(this._pointsProgram, 'screenSize'), data.width, data.height);
+                        gl.vertexAttrib2f(screenSizeAttribLocation, data.width, data.height);
                         gl.drawArrays(gl.POINTS, 0, data.pointsCount);
                     }
                 }

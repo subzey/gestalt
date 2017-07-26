@@ -163,7 +163,11 @@ export class Particles {
 		if (this._edgesProgram && data.edgesCount) {
 			gl.useProgram(this._edgesProgram);
 
-			const coordsAttribLocation = gl.getAttribLocation(this._pointsProgram, 'coords');
+			const coordsAttribLocation = gl.getAttribLocation(this._edgesProgram, 'coords');
+			const screenSizeAttribLocation = gl.getAttribLocation(this._edgesProgram, 'screenSize');
+
+			gl.enableVertexAttribArray(coordsAttribLocation);
+			gl.disableVertexAttribArray(screenSizeAttribLocation);
 
 			gl.vertexAttribPointer(
 				coordsAttribLocation, // index
@@ -173,9 +177,8 @@ export class Particles {
 				0, // stride: default
 				data.edgesPtr
 			);
+			gl.vertexAttrib2f(screenSizeAttribLocation, data.width, data.height);
 
-			gl.enableVertexAttribArray(coordsAttribLocation);
-			gl.vertexAttrib2f(gl.getAttribLocation(this._edgesProgram, 'screenSize'), data.width, data.height);
 			gl.drawArrays(gl.TRIANGLES, 0, data.edgesCount);
 		}
 
@@ -184,7 +187,12 @@ export class Particles {
 
 			const sizeAttribLocation = gl.getAttribLocation(this._pointsProgram, 'size');
 			const coordsAttribLocation = gl.getAttribLocation(this._pointsProgram, 'coords');
+			const screenSizeAttribLocation = gl.getAttribLocation(this._pointsProgram, 'screenSize');
 			const stride = 20;
+
+			gl.enableVertexAttribArray(sizeAttribLocation);
+			gl.enableVertexAttribArray(coordsAttribLocation);
+			gl.disableVertexAttribArray(screenSizeAttribLocation);
 
 			gl.vertexAttribPointer(
 				sizeAttribLocation, // index
@@ -202,11 +210,7 @@ export class Particles {
 				stride, // stride: 5 * 4 bytes between
 				data.pointsPtr + 4
 			);
-
-			gl.enableVertexAttribArray(sizeAttribLocation);
-			gl.enableVertexAttribArray(coordsAttribLocation);
-
-			gl.vertexAttrib2f(gl.getAttribLocation(this._pointsProgram, 'screenSize'), data.width, data.height);
+			gl.vertexAttrib2f(screenSizeAttribLocation, data.width, data.height);
 
 			gl.drawArrays(gl.POINTS, 0, data.pointsCount);
 		}
