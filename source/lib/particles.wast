@@ -82,16 +82,16 @@
 			;; This loop will run at least once, i.e, the zeroth element is always scaled.
 			;; Assuming this whole thing has no sense with zero particles, it's fine.
 
-			(f32.store offset=4 align=4 (get_local $ptr)
+			(f32.store offset=4 align=4 (get_local $ptr) ;; X ptr
 				(f32.mul
 					(get_local $float1)
 					(f32.load offset=4 align=4 (get_local $ptr))
 				)
 			)
 
-			(f32.store offset=8 align=4 (get_local $ptr)
+			(f32.store offset=8 align=4 (get_local $ptr) ;; Y ptr
 				(f32.mul
-					(get_local $float1)
+					(get_local $float2)
 					(f32.load offset=8 align=4 (get_local $ptr))
 				)
 			)
